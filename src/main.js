@@ -4,6 +4,8 @@ import infoPage from "../pages/info.html";
 import boardPage from "../pages/index.html";
 import rulesPage from "../pages/rules.html";
 
+import headerComponent from "../components/header.html";
+
 import {
   GetObjectCommand,
   PutObjectCommand,
@@ -15,7 +17,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
  * @param {string} content
  */
 const serveHtml = (content) => {
-  return new Response(content, {
+  const processedContent = content.replaceAll("{header}", headerComponent);
+
+  return new Response(processedContent, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
     },
@@ -59,7 +63,9 @@ const routes = {
           throw new Error("Unable to retrieve visit count");
         }
 
-        return serveHtml(boardPage.replace("{visits}", String(visits)));
+        const content = boardPage.replaceAll("{visits}", String(visits));
+
+        return serveHtml(content);
       } catch (err) {
         return Response.json(
           {
