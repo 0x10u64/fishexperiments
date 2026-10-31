@@ -98,8 +98,10 @@ div#posts {
 }
 
 .post img.emoji {
+  width: 1lh;
   height: 1lh;
   vertical-align: bottom;
+  cursor: auto;
 }
 
 .post-name,
