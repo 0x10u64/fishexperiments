@@ -63,11 +63,23 @@ document.addEventListener("DOMContentLoaded", () => {
       document.createTextNode(` ${createdAtString} ID: ${post.id} `),
     );
 
-    if (isReply) {
-      const headingReplyAnchor = document.createElement("a");
-      headingReplyAnchor.textContent = "Reply";
+    const headingReplyAnchor = document.createElement("a");
+    headingReplyAnchor.textContent = "Reply";
+
+    if (!isReply) {
+      if (threadId == post.id) {
+        headingReplyAnchor.href = "#";
+        headingReplyAnchor.addEventListener("click", (event) => {
+          event.preventDefault();
+
+          els.postFormContent.focus();
+          els.postFormContent.value += `>>${post.id}\n`;
+        });
+      } else {
+        headingReplyAnchor.href = `/thread/${post.id}`;
+      }
+    } else {
       headingReplyAnchor.href = "#";
-      headingReplyAnchor.classList.add("post-reply");
       headingReplyAnchor.dataset.postId = post.id;
       headingReplyAnchor.addEventListener("click", (event) => {
         event.preventDefault();
@@ -76,9 +88,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const postId = headingReplyAnchor.dataset.postId ?? "unknown";
         els.postFormContent.value += `>>${postId}\n`;
       });
-
-      heading.append(headingReplyAnchor);
     }
+
+    heading.append(headingReplyAnchor);
 
     postDiv.append(heading);
 
