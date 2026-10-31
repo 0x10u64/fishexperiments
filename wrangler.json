@@ -1,0 +1,26 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "fishexperiments",
+  "main": "./src/main.js",
+  "compatibility_date": "2026-09-22",
+  "assets": {
+    "directory": "./public/"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fishexperiments",
+      "database_id": "9ca8eed4-7b43-4c5c-8e8f-1a7e52df2bf4"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "RL",
+      "namespace_id": "1",
+      "simple": {
+        "limit": 20,
+        "period": 10
+      }
+    }
+  ]
+}

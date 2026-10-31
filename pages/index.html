@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>fishexperiments</title>
+    <link rel="icon" href="/img/favicon.png" type="image/png" />
+    <link rel="stylesheet" href="/css/style.css" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <span>
+        [ <a href="/info">info</a> / <a href="/rules">rules</a> ] [
+        <a href="/">index</a> ] [ <a href="/emoji">emoji</a> ]
+      </span>
+    </header>
+
+    <main>
+      <a class="title" href="/">
+        <img class="title" src="/img/title.png" alt="title" />
+      </a>
+
+      <hr />
+
+      <span id="inThreadSpan" style="display: none">
+        You are in a thread. Clicking "post" will make a reply to the original
+        poster.
+        <a id="inThreadAnchor" href="/">Return</a>
+      </span>
+
+      <form id="postForm">
+        <div class="post-grid">
+          <span><label for="name">Name</label></span>
+          <span><input name="name" type="text" placeholder="Anonymous" /></span>
+          <span><label for="tripcode">Tripcode</label></span>
+          <span><input name="tripcode" type="text" /></span>
+          <span><label for="content">Content</label></span>
+          <span><textarea name="content" id="postFormContent"></textarea></span>
+          <span><label for="file">File</label></span>
+          <span><input name="file" type="file" /></span>
+        </div>
+        <input type="submit" value="Post" id="postFormSubmit" />
+      </form>
+
+      <hr />
+
+      <div id="posts"></div>
+    </main>
+
+    <script src="/js/index.js"></script>
+  </body>
+</html>
