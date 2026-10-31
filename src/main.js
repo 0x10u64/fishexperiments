@@ -24,16 +24,62 @@ const serveHtml = (content) => {
 
 /** @type {Object<string, Function>} */
 const routes = {
-  "/": () => serveHtml(boardPage),
+  "/":
+    /**
+     * @param {Request} request
+     * @param {any} env
+     */
+    async (request, env) => {
+      try {
+        await env.DB.prepare(
+          `
+          CREATE TABLE IF NOT EXISTS kv_store (
+            key TEXT PRIMARY KEY,
+            value TEXT
+          )
+        `,
+        ).run();
+
+        await env.DB.prepare(
+          `
+          INSERT INTO kv_store (key, value)
+          VALUES ('visits', '1')
+          ON CONFLICT(key) DO UPDATE
+          SET value = CAST(kv_store.value AS INTEGER) + 1
+        `,
+        ).run();
+
+        const visits = await env.DB.prepare(
+          "SELECT value FROM kv_store WHERE key = ?",
+        )
+          .bind("visits")
+          .first("value");
+
+        if (visits === null) {
+          throw new Error("Unable to retrieve visit count");
+        }
+
+        return serveHtml(boardPage.replace("{visits}", String(visits)));
+      } catch (err) {
+        return Response.json(
+          {
+            error: err instanceof Error ? err.message : "Visit count error",
+          },
+          { status: 500 },
+        );
+      }
+    },
   "/info": () => serveHtml(infoPage),
   "/rules": () => serveHtml(rulesPage),
-  "/api/posts": async (
-    /** @type {Request} */ request,
-    /** @type {any} */ env,
-  ) => {
-    try {
-      await env.DB.prepare(
-        `
+  "/api/posts":
+    /**
+     * @param {Request} request
+     * @param {any} env
+     */
+    async (request, env) => {
+      try {
+        await env.DB.prepare(
+          `
           CREATE TABLE IF NOT EXISTS posts (
             id TEXT PRIMARY KEY,
             thread_id TEXT,
@@ -45,30 +91,30 @@ const routes = {
             updated_at TEXT
           )
         `,
-      ).run();
-    } catch (err) {
-      return Response.json(
-        {
-          error: err instanceof Error ? err.message : "DB init error",
+        ).run();
+      } catch (err) {
+        return Response.json(
+          {
+            error: err instanceof Error ? err.message : "DB init error",
+          },
+          { status: 500 },
+        );
+      }
+
+      const s3 = new S3Client({
+        region: "eu-central-003",
+        endpoint: "https://s3.eu-central-003.backblazeb2.com",
+        credentials: {
+          accessKeyId: env.B2_KEY_ID,
+          secretAccessKey: env.B2_APPLICATION_KEY,
         },
-        { status: 500 },
-      );
-    }
+      });
 
-    const s3 = new S3Client({
-      region: "eu-central-003",
-      endpoint: "https://s3.eu-central-003.backblazeb2.com",
-      credentials: {
-        accessKeyId: env.B2_KEY_ID,
-        secretAccessKey: env.B2_APPLICATION_KEY,
-      },
-    });
+      if (request.method === "GET") {
+        try {
+          const threadId = new URL(request.url).searchParams.get("thread");
 
-    if (request.method === "GET") {
-      try {
-        const threadId = new URL(request.url).searchParams.get("thread");
-
-        const columns = `
+          const columns = `
           id, thread_id as threadId,
           name, tripcode, content,
           file_name as fileName,
@@ -85,150 +131,150 @@ const routes = {
           END as imageCount
         `;
 
-        const query = threadId
-          ? {
-              sql: `
+          const query = threadId
+            ? {
+                sql: `
                 SELECT ${columns} FROM posts
                 WHERE id = ? OR thread_id = ?
                 ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END, created_at ASC
               `,
-              bindings: [threadId, threadId, threadId],
-            }
-          : {
-              sql: `
+                bindings: [threadId, threadId, threadId],
+              }
+            : {
+                sql: `
                 SELECT ${columns} FROM posts
                 WHERE thread_id IS NULL
                 ORDER BY updated_at DESC
                 LIMIT 16
               `,
-              bindings: [],
-            };
+                bindings: [],
+              };
 
-        const { results } = await env.DB.prepare(query.sql)
-          .bind(...query.bindings)
-          .all();
+          const { results } = await env.DB.prepare(query.sql)
+            .bind(...query.bindings)
+            .all();
 
-        const posts = await Promise.all(
-          results.map(async (/** @type {any} */ post) => {
-            let fileUrl = null;
+          const posts = await Promise.all(
+            results.map(async (/** @type {any} */ post) => {
+              let fileUrl = null;
 
-            if (post.fileName) {
-              const command = new GetObjectCommand({
-                Bucket: "fishexperiments",
-                Key: post.fileName,
-              });
+              if (post.fileName) {
+                const command = new GetObjectCommand({
+                  Bucket: "fishexperiments",
+                  Key: post.fileName,
+                });
 
-              fileUrl = await getSignedUrl(s3, command, {
-                expiresIn: 60,
-              });
-            }
+                fileUrl = await getSignedUrl(s3, command, {
+                  expiresIn: 60,
+                });
+              }
 
-            return {
-              ...post,
-              fileUrl,
-            };
-          }),
-        );
+              return {
+                ...post,
+                fileUrl,
+              };
+            }),
+          );
 
-        return Response.json(posts);
-      } catch (err) {
-        return Response.json(
-          { error: err instanceof Error ? err.message : "GET error" },
-          { status: 500 },
-        );
+          return Response.json(posts);
+        } catch (err) {
+          return Response.json(
+            { error: err instanceof Error ? err.message : "GET error" },
+            { status: 500 },
+          );
+        }
       }
-    }
 
-    if (request.method === "POST") {
-      try {
-        const formData = await request.formData();
+      if (request.method === "POST") {
+        try {
+          const formData = await request.formData();
 
-        const threadId = formData.get("thread") ?? null;
+          const threadId = formData.get("thread") ?? null;
 
-        if (threadId) {
-          const parent = await env.DB.prepare(
-            `
+          if (threadId) {
+            const parent = await env.DB.prepare(
+              `
               SELECT id from posts
               WHERE id = ? AND thread_id IS NULL
             `,
-          )
-            .bind(threadId)
-            .first();
-
-          if (!parent) {
-            return Response.json(
-              { error: "Thread not found" },
-              { status: 404 },
-            );
-          }
-        }
-
-        const postId = Array.from({ length: 8 }, () =>
-          Math.floor(Math.random() * 16).toString(16),
-        ).join("");
-
-        const name = String(formData.get("name") || "Anonymous").trim();
-        if (name.includes("!")) {
-          return Response.json({ error: "Name is invalid" }, { status: 400 });
-        }
-
-        const rawTripcode = String(formData.get("tripcode") || "").trim();
-        const tripcode = rawTripcode
-          ? Array.from(
-              new Uint8Array(
-                await crypto.subtle.digest(
-                  "SHA-256",
-                  new TextEncoder().encode(rawTripcode),
-                ),
-              ),
-              (byte) => byte.toString(16).padStart(2, "0"),
             )
-              .join("")
-              .slice(0, 8)
-          : null;
+              .bind(threadId)
+              .first();
 
-        const content = String(formData.get("content") || "").trim();
-        if (!content) {
-          return Response.json(
-            { error: "Content is required" },
-            { status: 400 },
-          );
-        }
+            if (!parent) {
+              return Response.json(
+                { error: "Thread not found" },
+                { status: 404 },
+              );
+            }
+          }
 
-        if (new TextEncoder().encode(content).byteLength > 256) {
-          return Response.json(
-            { error: "Content must be 256 bytes or less" },
-            { status: 400 },
-          );
-        }
+          const postId = Array.from({ length: 8 }, () =>
+            Math.floor(Math.random() * 16).toString(16),
+          ).join("");
 
-        const file = formData.get("file") || null;
+          const name = String(formData.get("name") || "Anonymous").trim();
+          if (name.includes("!")) {
+            return Response.json({ error: "Name is invalid" }, { status: 400 });
+          }
 
-        let fileName = null;
-        if (file && typeof file === "object" && file.name) {
-          if (file.size > 4 * 1024 * 1024) {
+          const rawTripcode = String(formData.get("tripcode") || "").trim();
+          const tripcode = rawTripcode
+            ? Array.from(
+                new Uint8Array(
+                  await crypto.subtle.digest(
+                    "SHA-256",
+                    new TextEncoder().encode(rawTripcode),
+                  ),
+                ),
+                (byte) => byte.toString(16).padStart(2, "0"),
+              )
+                .join("")
+                .slice(0, 8)
+            : null;
+
+          const content = String(formData.get("content") || "").trim();
+          if (!content) {
             return Response.json(
-              { error: "Image must be 4 MB or smaller" },
+              { error: "Content is required" },
               { status: 400 },
             );
           }
 
-          fileName = `${randomUUID()}-${file.name}`;
+          if (new TextEncoder().encode(content).byteLength > 256) {
+            return Response.json(
+              { error: "Content must be 256 bytes or less" },
+              { status: 400 },
+            );
+          }
 
-          await s3.send(
-            new PutObjectCommand({
-              Bucket: "fishexperiments",
-              Key: fileName,
-              Body: new Uint8Array(await file.arrayBuffer()),
-              ContentType: file.type,
-            }),
-          );
-        }
+          const file = formData.get("file") || null;
 
-        const now = new Date().toISOString();
+          let fileName = null;
+          if (file && typeof file === "object" && file.name) {
+            if (file.size > 4 * 1024 * 1024) {
+              return Response.json(
+                { error: "Image must be 4 MB or smaller" },
+                { status: 400 },
+              );
+            }
 
-        await env.DB.prepare(
-          `
+            fileName = `${randomUUID()}-${file.name}`;
+
+            await s3.send(
+              new PutObjectCommand({
+                Bucket: "fishexperiments",
+                Key: fileName,
+                Body: new Uint8Array(await file.arrayBuffer()),
+                ContentType: file.type,
+              }),
+            );
+          }
+
+          const now = new Date().toISOString();
+
+          await env.DB.prepare(
+            `
             INSERT INTO posts (
               id,
               thread_id,
@@ -241,58 +287,58 @@ const routes = {
             )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
           `,
-        )
-          .bind(
-            postId,
-            threadId,
-            name,
-            tripcode,
-            content,
-            fileName,
-            now,
-            threadId ? null : now,
           )
-          .run();
+            .bind(
+              postId,
+              threadId,
+              name,
+              tripcode,
+              content,
+              fileName,
+              now,
+              threadId ? null : now,
+            )
+            .run();
 
-        if (threadId) {
-          await env.DB.prepare(
-            `
+          if (threadId) {
+            await env.DB.prepare(
+              `
               UPDATE posts
               SET updated_at = ?
               WHERE id = ?
             `,
-          )
-            .bind(now, threadId)
-            .run();
+            )
+              .bind(now, threadId)
+              .run();
+          }
+
+          return Response.json(
+            {
+              id: postId,
+              threadId,
+              name,
+              tripcode,
+              content,
+              createdAt: now,
+              updatedAt: threadId ? null : now,
+            },
+            { status: 201 },
+          );
+        } catch (err) {
+          return Response.json(
+            {
+              error: err instanceof Error ? err?.message : "POST error",
+            },
+            { status: 500 },
+          );
         }
-
-        return Response.json(
-          {
-            id: postId,
-            threadId,
-            name,
-            tripcode,
-            content,
-            createdAt: now,
-            updatedAt: threadId ? null : now,
-          },
-          { status: 201 },
-        );
-      } catch (err) {
-        return Response.json(
-          {
-            error: err instanceof Error ? err?.message : "POST error",
-          },
-          { status: 500 },
-        );
       }
-    }
 
-    return new Response("Method Not Allowed", {
-      status: 405,
-      headers: { Allow: "GET, POST" },
-    });
-  },
+      return new Response("Method Not Allowed", {
+        status: 405,
+        headers: { Allow: "GET, POST" },
+      });
+    },
 };
 
 export default {
