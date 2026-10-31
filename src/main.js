@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 
 import infoPage from "../pages/info.html";
 import boardPage from "../pages/index.html";
-import emojiPage from "../pages/emoji.html";
 import rulesPage from "../pages/rules.html";
 
 import {
@@ -27,7 +26,6 @@ const serveHtml = (content) => {
 const routes = {
   "/": () => serveHtml(boardPage),
   "/info": () => serveHtml(infoPage),
-  "/emoji": () => serveHtml(emojiPage),
   "/rules": () => serveHtml(rulesPage),
   "/api/posts": async (
     /** @type {Request} */ request,

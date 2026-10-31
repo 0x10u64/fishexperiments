@@ -207,19 +207,16 @@ form {
   padding-inline: 0;
 }
 
-.emoji-container {
+div#emojiPicker {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 8px;
 }
 
-.emoji-container > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.emoji-container > div > img {
-  height: 4rem;
+div#emojiPicker > img {
+  height: 2rem;
+  padding: 2px;
+  background: #2e2e2e;
+  border: 1px solid #4e4e4e;
+  cursor: pointer;
 }

@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     posts: queryElement("posts", HTMLDivElement),
     inThreadSpan: queryElement("inThreadSpan", HTMLSpanElement),
     inThreadAnchor: queryElement("inThreadAnchor", HTMLAnchorElement),
+    emojiPicker: queryElement("emojiPicker", HTMLDivElement),
   };
 
   const threadId = window.location.pathname.split("/")[2] || null;
@@ -207,7 +208,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  Array.from(els.emojiPicker.children).forEach((el) => {
+    if (el instanceof HTMLElement) {
+      el.addEventListener("click", () => {
+        const emoji = el.dataset.emoji;
+        els.postFormContent.value += `[${emoji}]`;
+      });
+    }
+  });
+
   els.postForm.reset();
+
   els.postForm.addEventListener("submit", async (ev) => {
     ev.preventDefault();
     els.postFormSubmit.disabled = true;
