@@ -132,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
         '<img class="emoji" src="/img/emoji/$1.gif" alt="[$1]" />',
       )
       .replace(
-        /&lt;&gt;&lt;|&gt;&lt;&gt;/g,
+        /&lt;&gt;&lt;/g,
         '<span class="post-fish-container"><span class="post-fish">&gt;&lt;&gt;</span></span>',
       )
       .replace(/\n/g, "<br />");
