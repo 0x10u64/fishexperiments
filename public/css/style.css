@@ -198,6 +198,12 @@ form {
   align-items: baseline;
 }
 
+.post-grid > :nth-child(even) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .post-grid textarea {
   width: 100%;
   height: 12ch;
