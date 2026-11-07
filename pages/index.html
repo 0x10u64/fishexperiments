@@ -21,11 +21,7 @@
 
       <hr />
 
-      <span id="inThreadSpan" style="display: none">
-        You are in a thread. Clicking "post" will make a reply to the original
-        poster.
-        <a id="inThreadAnchor" href="/">Return</a>
-      </span>
+      {threadNotice}
 
       <form id="postForm">
         <div class="post-grid">
@@ -85,7 +81,7 @@
 
       <hr />
 
-      <div id="posts"></div>
+      <div id="posts">{posts}</div>
     </main>
 
     <script src="/js/index.js"></script>

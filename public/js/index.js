@@ -12,219 +12,68 @@ document.addEventListener("DOMContentLoaded", () => {
     return el;
   };
 
-  const els = {
-    postForm: queryElement("postForm", HTMLFormElement),
-    postFormContent: queryElement("postFormContent", HTMLTextAreaElement),
-    postFormSubmit: queryElement("postFormSubmit", HTMLInputElement),
-    posts: queryElement("posts", HTMLDivElement),
-    inThreadSpan: queryElement("inThreadSpan", HTMLSpanElement),
-    inThreadAnchor: queryElement("inThreadAnchor", HTMLAnchorElement),
-    emojiPicker: queryElement("emojiPicker", HTMLDivElement),
-  };
+  const postForm = queryElement("postForm", HTMLFormElement);
+  const postFormContent = queryElement("postFormContent", HTMLTextAreaElement);
+  const postFormSubmit = queryElement("postFormSubmit", HTMLInputElement);
+  const emojiPicker = queryElement("emojiPicker", HTMLDivElement);
 
   const threadId = window.location.pathname.split("/")[2] || null;
 
-  /**
-   * @param {any} post
-   * @param {boolean} isReply
-   */
-  const renderPost = (post, isReply) => {
-    const postDiv = document.createElement("div");
-    postDiv.id = `p${post.id}`;
-
-    if (isReply) {
-      postDiv.classList.add("reply");
-    }
-
-    postDiv.classList.add("post");
-
-    const heading = document.createElement("span");
-    const headingName = document.createElement("span");
-
-    headingName.classList.add("post-name");
-    headingName.textContent = post.name;
-    heading.append(headingName);
-
-    if (post.tripcode) {
-      const tripcodeSpan = document.createElement("span");
-      tripcodeSpan.classList.add("post-tripcode");
-      tripcodeSpan.textContent = `!${post.tripcode}`;
-      heading.append(tripcodeSpan);
-    }
-
-    /** @param {number} n */
-    const pad = (n) => String(n).padStart(2, "0");
-
-    const d = new Date(post.createdAt);
-    const createdAtString =
-      `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ` +
-      `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-
-    heading.append(
-      document.createTextNode(` ${createdAtString} ID: ${post.id} `),
-    );
-
-    const headingReplyAnchor = document.createElement("a");
-    headingReplyAnchor.textContent = "Reply";
-
-    if (!isReply) {
-      if (threadId == post.id) {
-        headingReplyAnchor.href = "#";
-        headingReplyAnchor.addEventListener("click", (event) => {
-          event.preventDefault();
-
-          els.postFormContent.focus();
-          els.postFormContent.value += `>>${post.id}\n`;
-        });
-      } else {
-        headingReplyAnchor.href = `/thread/${post.id}`;
+  document.querySelectorAll('.post a[href^="#p"]').forEach((anchor) => {
+    anchor.addEventListener("click", () => {
+      const href = anchor.getAttribute("href");
+      if (!href || !/^#p[0-9a-f]{8}$/.test(href)) {
+        return;
       }
-    } else {
-      headingReplyAnchor.href = "#";
-      headingReplyAnchor.dataset.postId = post.id;
-      headingReplyAnchor.addEventListener("click", (event) => {
-        event.preventDefault();
 
-        els.postFormContent.focus();
-        const postId = headingReplyAnchor.dataset.postId ?? "unknown";
-        els.postFormContent.value += `>>${postId}\n`;
+      document.querySelectorAll(".highlight").forEach((el) => {
+        el.classList.remove("highlight");
       });
-    }
 
-    heading.append(headingReplyAnchor);
-
-    postDiv.append(heading);
-
-    if (post.fileUrl) {
-      const image = document.createElement("img");
-      image.src = post.fileUrl;
-      postDiv.append(image);
-
-      image.addEventListener("click", () => {
-        image.classList.toggle("expanded");
-      });
-    }
-
-    const content = document.createElement("span");
-
-    /** @type {string} */
-    const escapedContent = post.content.replace(
-      /[<>&"']/g,
-      /** @param {string} c  */
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
-
-    const processedContent = escapedContent
-      .replace(/\*\*(.+)\*\*/g, "<strong>&#42;&#42;$1&#42;&#42;</strong>")
-      .replace(/\*(.+)\*/g, "<i>&#42;$1&#42;</i>")
-      .replace(/~~(.+)~~/g, "<s>&#126;&#126;$1&#126;&#126;</s>")
-      .replace(/(https?:\/\/\S+)/g, '<a target="_blank" href="$1">$1</a>')
-      .replace(/&gt;&gt;([0-9a-f]{8})/g, '<a href="#p$1">&gt;&gt;$1</a>')
-      .replace(/^&gt;(.*)$/gm, '<span class="post-quote">&gt;$1</span>')
-      .replace(
-        /\[([a-z]+)\]/g,
-        '<img class="emoji" src="/img/emoji/$1.gif" alt="[$1]" />',
-      )
-      .replace(
-        /&lt;&gt;&lt;/g,
-        '<span class="post-fish-container"><span class="post-fish">&gt;&lt;&gt;</span></span>',
-      )
-      .replace(/\n/g, "<br />");
-
-    content.innerHTML = processedContent;
-    postDiv.append(content);
-
-    Array.from(content.getElementsByTagName("a")).forEach((el) => {
-      if (el instanceof HTMLAnchorElement) {
-        const href = el.getAttribute("href");
-
-        if (href && /^#p[0-9a-f]{8}$/.test(href)) {
-          el.addEventListener("click", () => {
-            Array.from(document.getElementsByClassName("highlight")).forEach(
-              (el) => {
-                el.classList.remove("highlight");
-              },
-            );
-
-            const targetPost = document.getElementById(href.slice(1));
-
-            if (targetPost instanceof HTMLDivElement) {
-              targetPost.classList.add("highlight");
-              setTimeout(() => {
-                targetPost.classList.remove("highlight");
-              }, 5000);
-            }
-          });
-        }
+      const targetPost = document.getElementById(href.slice(1));
+      if (targetPost instanceof HTMLDivElement) {
+        targetPost.classList.add("highlight");
+        setTimeout(() => targetPost.classList.remove("highlight"), 5000);
       }
     });
+  });
 
-    if (!isReply) {
-      const footer = document.createElement("span");
-      footer.append(
-        document.createTextNode(
-          `R: ${post.replyCount} / I: ${post.imageCount} `,
-        ),
-      );
+  document.querySelectorAll(".post > img").forEach((image) => {
+    image.addEventListener("click", () => image.classList.toggle("expanded"));
+  });
 
-      const footerViewAnchor = document.createElement("a");
-      footerViewAnchor.textContent = "View";
-      footerViewAnchor.href = `/thread/${post.id}`;
-      footer.append(footerViewAnchor);
+  document.querySelectorAll('.post > div > a[href="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", (event) => {
+      event.preventDefault();
 
-      postDiv.append(footer);
-    }
-
-    return postDiv;
-  };
-
-  const loadPosts = async () => {
-    const url = threadId ? `/api/posts?thread=${threadId}` : "/api/posts";
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Unable to load posts");
-    }
-
-    if (threadId) {
-      els.inThreadSpan.style.display = "inline";
-    }
-
-    els.posts.replaceChildren();
-    for (let i = 0; i < data.length; i++) {
-      if (i > 0 && threadId === null) {
-        els.posts.append(document.createElement("hr"));
+      const post = anchor.closest(".post");
+      if (!(post instanceof HTMLDivElement)) {
+        return;
       }
 
-      els.posts.append(renderPost(data[i], threadId !== null && i > 0));
-    }
-  };
+      postFormContent.focus();
+      postFormContent.value += `>>${post.id.slice(1)}\n`;
+    });
+  });
 
-  Array.from(els.emojiPicker.children).forEach((el) => {
+  Array.from(emojiPicker.children).forEach((el) => {
     if (el instanceof HTMLElement) {
       el.addEventListener("click", () => {
         const emoji = el.dataset.emoji;
-        els.postFormContent.value += `[${emoji}]`;
+        if (emoji) {
+          postFormContent.value += `[${emoji}]`;
+        }
       });
     }
   });
 
-  els.postForm.reset();
-
-  els.postForm.addEventListener("submit", async (ev) => {
-    ev.preventDefault();
-    els.postFormSubmit.disabled = true;
+  postForm.reset();
+  postForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    postFormSubmit.disabled = true;
 
     try {
-      const formData = new FormData(els.postForm);
+      const formData = new FormData(postForm);
       if (threadId) {
         formData.set("thread", threadId);
       }
@@ -233,23 +82,18 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         body: formData,
       });
-
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Unable to create post");
       }
 
-      els.postForm.reset();
-      await loadPosts();
+      window.location.reload();
     } catch (error) {
       window.alert(
         error instanceof Error ? error.message : "Unknown post error",
       );
       console.error(error);
-    } finally {
-      els.postFormSubmit.disabled = false;
+      postFormSubmit.disabled = false;
     }
   });
-
-  loadPosts().catch((error) => window.alert(error.message));
 });
