@@ -29,24 +29,57 @@
 
       <form id="postForm">
         <div class="post-grid">
-          <span><label for="name">Name</label></span>
-          <span><input name="name" type="text" placeholder="Anonymous" /></span>
-          <span><label for="tripcode">Tripcode</label></span>
-          <span><input name="tripcode" type="text" /></span>
-          <span> <label for="content">Content</label></span>
-          <span>
-            <textarea name="content" id="postFormContent"></textarea>
-            <details>
-              <summary>Emoji</summary>
-              <div id="emojiPicker">
-                <img data-emoji="despair" src="/img/emoji/despair.gif" />
-                <img data-emoji="nuko" src="/img/emoji/nuko.gif" />
-              </div>
-            </details>
-          </span>
-          <span><label for="file">File</label></span>
-          <span><input name="file" type="file" /></span>
+          <div class="row">
+            <label for="name">Name</label>
+            <span>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Anonymous"
+              />
+            </span>
+          </div>
+
+          <div class="row">
+            <label for="tripcode">Tripcode</label>
+            <span>
+              <input id="tripcode" name="tripcode" type="text" />
+            </span>
+          </div>
+
+          <div class="row">
+            <label for="postFormContent">Content</label>
+            <span>
+              <textarea id="postFormContent" name="content"></textarea>
+              <br />
+
+              <details>
+                <summary>Emoji</summary>
+                <div id="emojiPicker">
+                  <img
+                    data-emoji="despair"
+                    src="/img/emoji/despair.gif"
+                    alt=":despair:"
+                  />
+                  <img
+                    data-emoji="nuko"
+                    src="/img/emoji/nuko.gif"
+                    alt=":nuko:"
+                  />
+                </div>
+              </details>
+            </span>
+          </div>
+
+          <div class="row">
+            <label for="file">File</label>
+            <span>
+              <input id="file" name="file" type="file" />
+            </span>
+          </div>
         </div>
+
         <input type="submit" value="Post" id="postFormSubmit" />
       </form>
 

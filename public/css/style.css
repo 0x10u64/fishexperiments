@@ -179,29 +179,29 @@ form {
 }
 
 .post-grid {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
   width: 100%;
   max-width: 32rem;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
 }
 
-.post-grid > * {
+.post-grid > .row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 4px;
+}
+
+.post-grid > .row > * {
   background: #2e2e2e;
 }
 
-.post-grid > :nth-child(odd) {
+.post-grid > .row > :nth-child(odd) {
   font-weight: 600;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: baseline;
-}
-
-.post-grid > :nth-child(even) {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
 
 .post-grid textarea {
