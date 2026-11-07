@@ -4,7 +4,8 @@
   "main": "./src/main.js",
   "compatibility_date": "2026-09-22",
   "assets": {
-    "directory": "./public/"
+    "directory": "./public/",
+    "binding": "ASSETS"
   },
   "d1_databases": [
     {
