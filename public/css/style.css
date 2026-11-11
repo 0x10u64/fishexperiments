@@ -42,6 +42,7 @@ a.title {
 a.title img {
   width: 100%;
   max-width: 32rem;
+  height: auto;
 }
 
 a {
