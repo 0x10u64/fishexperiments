@@ -70,14 +70,14 @@ const renderPost = (post, isReply, threadId) => {
     .replace(/~~(.+)~~/g, "<s>&#126;&#126;$1&#126;&#126;</s>")
     .replace(/(https?:\/\/\S+)/g, '<a target="_blank" href="$1">$1</a>')
     .replace(/&gt;&gt;([0-9a-f]{8})/g, '<a href="#p$1">&gt;&gt;$1</a>')
+    .replace(
+      /(&lt;&gt;&lt;)|(&gt;&lt;&gt;)/g,
+      '<span class="post-fish-container"><span class="post-fish">&gt;&lt;&gt;</span></span>',
+    )
     .replace(/^&gt;(.*)$/gm, '<span class="post-quote">&gt;$1</span>')
     .replace(
       /\[([a-z]+)\]/g,
       '<img class="emoji" src="/img/emoji/$1.gif" alt="[$1]" />',
-    )
-    .replace(
-      /&lt;&gt;&lt;/g,
-      '<span class="post-fish-container"><span class="post-fish">&gt;&lt;&gt;</span></span>',
     )
     .replace(/\n/g, "<br />");
 
