@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
 
-import infoPage from "../pages/info.html";
 import boardPage from "../pages/index.html";
+import infoPage from "../pages/info.html";
 import rulesPage from "../pages/rules.html";
+import notFoundPage from "../pages/404.html";
 
 import headerComponent from "../components/header.html";
 import postComponent from "../components/post.html";
@@ -498,5 +499,14 @@ export default {
     if (route) {
       return route(request, env);
     }
+
+    /** @type {Response} */
+    const assetResponse = await env.ASSETS.fetch(request);
+
+    if (assetResponse.status === 404) {
+      return serveHtml(notFoundPage, true);
+    }
+
+    return assetResponse;
   },
 };
