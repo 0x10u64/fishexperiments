@@ -56,15 +56,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  Array.from(emojiPicker.children).forEach((el) => {
-    if (el instanceof HTMLElement) {
-      el.addEventListener("click", () => {
-        const emoji = el.dataset.emoji;
-        if (emoji) {
-          postFormContent.value += `[${emoji}]`;
-        }
-      });
-    }
+  emojiPicker.querySelectorAll("button[data-emoji]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const emoji = button.dataset.emoji;
+      if (emoji) {
+        postFormContent.value += `[${emoji}]`;
+      }
+    });
   });
 
   postForm.reset();

@@ -236,10 +236,15 @@ div#emojiPicker {
   gap: 8px;
 }
 
-div#emojiPicker > img {
+div#emojiPicker > button {
   height: 2rem;
   padding: 2px;
   background: #2e2e2e;
   border: 1px solid #4e4e4e;
   cursor: pointer;
+}
+
+div#emojiPicker > button > img {
+  display: block;
+  height: 100%;
 }
