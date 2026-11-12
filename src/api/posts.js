@@ -167,10 +167,7 @@ export default async (request, env) => {
 
       const content = String(formData.get("content") || "").trim();
       if (!content) {
-        return Response.json(
-          { error: "Content is required" },
-          { status: 400 },
-        );
+        return Response.json({ error: "Content is required" }, { status: 400 });
       }
 
       if (new TextEncoder().encode(content).byteLength > 256) {

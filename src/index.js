@@ -161,8 +161,7 @@ export default async (request, env) => {
          * @returns
          */
         (post, index) => {
-          const separator =
-            index > 0 ? (!threadId ? "<hr />" : "<br />") : "";
+          const separator = index > 0 ? (!threadId ? "<hr />" : "<br />") : "";
           const renderedPost = renderPost(
             post,
             threadId !== null && index > 0,
