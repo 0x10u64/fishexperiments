@@ -53,6 +53,11 @@ a:hover {
   color: #f0f0f0;
 }
 
+code {
+  font-family: monospace;
+  background: #1a1a1a;
+}
+
 ol li,
 ul li {
   margin-left: 2ch;

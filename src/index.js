@@ -23,9 +23,10 @@ const renderPost = (post, isReply, threadId) => {
 
   const escapedContent = escapeHtml(post.content);
   const content = escapedContent
-    .replace(/\*\*(.+)\*\*/g, "<strong>&#42;&#42;$1&#42;&#42;</strong>")
-    .replace(/\*(.+)\*/g, "<i>&#42;$1&#42;</i>")
-    .replace(/~~(.+)~~/g, "<s>&#126;&#126;$1&#126;&#126;</s>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/([*_])(.+?)\1/g, "<i>$2</i>")
+    .replace(/~~(.+?)~~/g, "<s>$1</s>")
+    .replace(/`(.+?)`/g, "<code>$1</code>")
     .replace(/(https?:\/\/\S+)/g, '<a target="_blank" href="$1">$1</a>')
     .replace(/&gt;&gt;([0-9a-f]{8})/g, '<a href="#p$1">&gt;&gt;$1</a>')
     .replace(
