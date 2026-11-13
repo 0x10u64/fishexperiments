@@ -11,8 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "bracketfish",
-      "database_id": "9ca8eed4-7b43-4c5c-8e8f-1a7e52df2bf4"
+      "database_id": "d0114b2d-b1a3-4105-bd1f-9f179b1349b7"
     }
   ],
   "ratelimits": [
