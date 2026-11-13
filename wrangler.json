@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "fishexperiments",
+  "name": "bracketfish",
   "main": "./src/main.js",
   "compatibility_date": "2026-09-22",
   "assets": {
@@ -11,7 +11,7 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "fishexperiments",
+      "database_name": "bracketfish",
       "database_id": "9ca8eed4-7b43-4c5c-8e8f-1a7e52df2bf4"
     }
   ],

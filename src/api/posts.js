@@ -95,7 +95,7 @@ export default async (request, env) => {
 
           if (post.fileName) {
             const command = new GetObjectCommand({
-              Bucket: "fishexperiments",
+              Bucket: "bracketfish",
               Key: post.fileName,
             });
 
@@ -192,7 +192,7 @@ export default async (request, env) => {
 
         await s3.send(
           new PutObjectCommand({
-            Bucket: "fishexperiments",
+            Bucket: "bracketfish",
             Key: fileName,
             Body: new Uint8Array(await file.arrayBuffer()),
             ContentType: file.type,
