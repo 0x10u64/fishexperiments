@@ -1,25 +1,9 @@
 import boardPage from "../pages/index.html";
-import headerComponent from "../components/header.html";
 import postComponent from "../components/post.html";
 import threadNoticeComponent from "../components/thread_notice.html";
 
 import postsRoute from "./api/posts.js";
-
-/**
- * @param {string} content
- * @param {boolean} [resolveHeader]
- */
-const serveHtml = (content, resolveHeader = true) => {
-  const processedContent = resolveHeader
-    ? content.replaceAll("{header}", headerComponent)
-    : content;
-
-  return new Response(processedContent, {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-    },
-  });
-};
+import { escapeHtml, serveHtml } from "./utils.js";
 
 /**
  * @param {any} post
@@ -27,22 +11,6 @@ const serveHtml = (content, resolveHeader = true) => {
  * @param {string | null} threadId
  */
 const renderPost = (post, isReply, threadId) => {
-  /**
-   * @param {unknown} value
-   */
-  const escapeHtml = (value) =>
-    String(value).replace(
-      /[&<>"']/g,
-      (character) =>
-        /** @type {Object<string, string>} */ ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[character],
-    );
-
   /**
    * @param {number} n
    */
@@ -173,12 +141,11 @@ export default async (request, env) => {
       .join("");
 
     const content = boardPage
-      .replaceAll("{header}", headerComponent)
       .replaceAll("{visits}", String(visits))
       .replaceAll("{threadNotice}", threadId ? threadNoticeComponent : "")
       .replaceAll("{posts}", renderedPosts);
 
-    return serveHtml(content, false);
+    return serveHtml(content);
   } catch (err) {
     return Response.json(
       {

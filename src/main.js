@@ -1,26 +1,10 @@
 import indexRoute from "./index.js";
 import postsRoute from "./api/posts.js";
+import { serveHtml } from "./utils.js";
 
 import infoPage from "../pages/info.html";
 import rulesPage from "../pages/rules.html";
 import notFoundPage from "../pages/404.html";
-import headerComponent from "../components/header.html";
-
-/**
- * @param {string} content
- * @param {boolean} [resolveHeader]
- */
-const serveHtml = (content, resolveHeader = true) => {
-  const processedContent = resolveHeader
-    ? content.replaceAll("{header}", headerComponent)
-    : content;
-
-  return new Response(processedContent, {
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-    },
-  });
-};
 
 /** @type {Object<string, Function>} */
 const routes = {
@@ -56,7 +40,7 @@ export default {
     const assetResponse = await env.ASSETS.fetch(request);
 
     if (assetResponse.status === 404) {
-      return serveHtml(notFoundPage, true);
+      return serveHtml(notFoundPage);
     }
 
     return assetResponse;
